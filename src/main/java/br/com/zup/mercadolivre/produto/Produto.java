@@ -6,11 +6,14 @@ import br.com.zup.mercadolivre.caracteristica.Caracteristica;
 import br.com.zup.mercadolivre.caracteristica.CaracteristicaRequest;
 import br.com.zup.mercadolivre.caracteristica.CaracteristicaResponse;
 import br.com.zup.mercadolivre.categoria.Categoria;
+import br.com.zup.mercadolivre.compra.Compra;
 import br.com.zup.mercadolivre.imagem.Imagem;
 import br.com.zup.mercadolivre.imagem.ImagemResponse;
 import br.com.zup.mercadolivre.pergunta.Pergunta;
 import br.com.zup.mercadolivre.pergunta.PerguntaResponse;
 import br.com.zup.mercadolivre.usuario.Usuario;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.persistence.*;
 import javax.validation.Valid;
@@ -48,6 +51,9 @@ public class Produto {
     @Column(nullable = false)
     private LocalDateTime dataCadastro = LocalDateTime.now();
     @NotNull
+    @Column(nullable = false)
+    private Integer estoque = 250;
+    @NotNull
     @ManyToOne
     @JoinColumn(name = "categoria_id")
     private Categoria categoria;
@@ -66,6 +72,8 @@ public class Produto {
     private List<Avaliacao> avaliacoes = new ArrayList<>();
     @OneToMany(mappedBy = "produto", cascade = CascadeType.ALL)
     private List<Pergunta> perguntas = new ArrayList<>();
+    @OneToMany(mappedBy = "produto", cascade = CascadeType.ALL)
+    private List<Compra> compras = new ArrayList<>();
 
     @Deprecated
     public Produto() {
@@ -106,6 +114,18 @@ public class Produto {
 
     public Usuario getUsuario() {
         return usuario;
+    }
+
+    public Integer getEstoque() {
+        return estoque;
+    }
+
+    public boolean baixarEstoque(Integer quantidade) {
+        if (this.estoque < quantidade) {
+            return false;
+        }
+        this.estoque -= quantidade;
+        return true;
     }
 
     public void vincularImagens(List<String> imagens) {
